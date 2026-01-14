@@ -30,7 +30,4 @@ import (
 
 	// 缓存
 	_ "github.com/redis/go-redis/v9"
-
-	// 用户服务 SDK
-	_ "github.com/2928807938/universal-service-user/sdk"
 )

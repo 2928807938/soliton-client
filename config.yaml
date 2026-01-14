@@ -1,0 +1,59 @@
+# ============================================================
+# Soliton Client 配置文件
+# ============================================================
+
+# 服务器配置
+server:
+  port: "8080"                    # 服务端口
+  mode: "debug"                   # 运行模式: debug / release
+
+# 数据库配置
+database:
+  driver: "postgres"              # 数据库类型: postgres / mysql / sqlite
+  host: "postgres"                # 数据库主机（Docker 环境使用服务名）
+  port: 5432                      # 数据库端口
+  user: "postgres"                # 数据库用户
+  password: "postgres"            # 数据库密码
+  dbname: "soliton-client"        # 数据库名称
+  auto_migrate: true              # 自动建表
+  max_open_conns: 100             # 最大连接数
+  max_idle_conns: 10              # 最大空闲连接数
+  conn_max_lifetime: 3600         # 连接最大生命周期（秒）
+
+# Redis 配置
+redis:
+  host: "redis"                   # Redis 主机（Docker 环境使用服务名）
+  port: 6379                      # Redis 端口
+  addr: "redis:6379"              # Redis 地址（Docker 环境使用服务名）
+  password: ""                    # Redis 密码（如果没有设置密码则为空）
+  db: 0                           # Redis 数据库索引
+  pool_size: 10                   # 连接池大小
+
+# JWT 配置
+jwt:
+  secret: "your-jwt-secret-key-change-in-production"  # JWT 密钥（生产环境务必修改！）
+  expire: 7200                    # Access Token 过期时间（秒）2小时
+  refresh_expire: 604800          # Refresh Token 过期时间（秒）7天
+  issuer: "soliton-client"        # JWT 签发者
+
+# 验证码配置
+verification:
+  code_length: 6                  # 验证码长度
+  expire: 300                     # 过期时间（秒）5分钟
+  rate_limit: 60                  # 发送间隔限制（秒）1分钟
+
+# 邮件配置（必需，用于发送验证码）
+email:
+  enabled: true                   # 是否启用邮件服务
+  smtp:
+    host: "smtp.qq.com"           # SMTP 服务器地址
+    port: 465                     # SMTP 端口 (QQ邮箱使用 465 SSL)
+    username: "9920664@qq.com"    # SMTP 用户名（QQ邮箱地址）
+    password: "tlxdkvvwwzcbbjbc"  # SMTP 授权码（不是QQ密码）
+    from: "Soliton Client <9920664@qq.com>"  # 发件人显示名称和邮箱
+  templates:
+    # 邮件模板，{code} 会被替换为实际验证码
+    register: "【Soliton Client】您的注册验证码是：{code}，有效期5分钟，请勿泄露。"
+    reset_password: "【Soliton Client】您的密码重置验证码是：{code}，有效期5分钟，请勿泄露。"
+    login: "【Soliton Client】您的登录验证码是：{code}，有效期5分钟，请勿泄露。"
+

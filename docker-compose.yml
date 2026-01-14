@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     container_name: soliton-client-postgres
     environment:
       POSTGRES_USER: postgres
@@ -21,7 +21,7 @@ services:
       - soliton-client-network
 
   redis:
-    image: redis:7-alpine
+    image: redis:alpine
     container_name: soliton-client-redis
     ports:
       - "6379:6379"
@@ -35,23 +35,50 @@ services:
     networks:
       - soliton-client-network
 
+  universal-service-user:
+    image: universal-service-user:v1.0.0
+    container_name: soliton-client-universal-service-user
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - soliton-client-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build: .
     container_name: soliton-client-app
     ports:
       - "8080:8080"
     environment:
+      # 数据库配置
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: soliton-client
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      # Redis 配置
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ""
+      # 用户服务配置
+      USER_SERVICE_URL: http://universal-service-user:8080
+      USER_SERVICE_TENANT_ID: ${USER_SERVICE_TENANT_ID:-}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      universal-service-user:
         condition: service_healthy
     networks:
       - soliton-client-network

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
-	usersdk "github.com/2928807938/universal-service-user/sdk"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -15,6 +15,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"soliton-client/api/handlers"
 )
 
 func main() {
@@ -25,14 +26,10 @@ func main() {
 	}
 
 	// 初始化 Redis
-	rdb := initRedis()
+	_ = initRedis()
 
-	// 初始化用户服务 SDK
-	userClient, err := initUserSDK(db, rdb)
-	if err != nil {
-		log.Fatalf("初始化用户服务 SDK 失败: %v", err)
-	}
-	defer userClient.Close()
+	// 初始化用户服务HTTP客户端
+	userClient := initUserServiceClient()
 
 	// 初始化 Hertz 服务器
 	port := getEnv("PORT", "8080")
@@ -50,7 +47,7 @@ func main() {
 }
 
 // registerRoutes 注册所有路由
-func registerRoutes(h *server.Hertz, db *gorm.DB, userClient *usersdk.Client) {
+func registerRoutes(h *server.Hertz, db *gorm.DB, userClient *handlers.UserServiceClient) {
 	// 健康检查
 	h.GET("/health", healthCheck(db))
 
@@ -65,7 +62,7 @@ func registerRoutes(h *server.Hertz, db *gorm.DB, userClient *usersdk.Client) {
 		})
 
 		// 用户相关路由
-		registerUserRoutes(v1, userClient)
+		handlers.RegisterUserRoutes(v1, userClient)
 	}
 }
 
@@ -135,31 +132,33 @@ func initRedis() *redis.Client {
 	return client
 }
 
-func initUserSDK(db *gorm.DB, rdb *redis.Client) (*usersdk.Client, error) {
-	// 创建 SDK 客户端
-	client, err := usersdk.New(
-		usersdk.WithDatabase(db),
-		usersdk.WithRedis(rdb),
-		usersdk.WithAutoMigrate(true), // 自动创建用户相关表
-		usersdk.WithJWT(
-			getEnv("JWT_SECRET", "your-secret-key"),
-			2*time.Hour,      // Access Token 过期时间
-			7*24*time.Hour,   // Refresh Token 过期时间
-			"soliton-client", // 签发者
-		),
-	)
+func initUserServiceClient() *handlers.UserServiceClient {
+	// 连接到 universal-service-user 服务
+	baseURL := getEnv("USER_SERVICE_URL", "http://universal-service-user:8080")
+	tenantID := getEnv("USER_SERVICE_TENANT_ID", "")
 
-	if err != nil {
-		return nil, err
+	// 如果没有配置 tenant_id，需要先注册应用获取 tenant_id
+	if tenantID == "" {
+		log.Println("警告: 未配置 USER_SERVICE_TENANT_ID，请先注册应用获取 tenant_id")
 	}
 
-	log.Println("用户服务 SDK 初始化成功")
-	return client, nil
+	userClient := handlers.NewUserServiceClient(baseURL, tenantID)
+	log.Printf("用户服务 HTTP 客户端初始化成功，连接到: %s", baseURL)
+	return userClient
 }
 
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
+	}
+	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
 	}
 	return defaultValue
 }

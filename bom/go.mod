@@ -3,8 +3,6 @@ module soliton-client/bom
 go 1.24.11
 
 require (
-	// 用户服务 SDK
-	github.com/2928807938/universal-service-user/sdk v0.0.0
 	github.com/bytedance/sonic v1.12.6
 	github.com/cloudwego/hertz v0.9.3
 	github.com/cloudwego/kitex v0.11.3
@@ -91,5 +89,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/2928807938/universal-service-user/sdk => ../../universal-service-user/sdk

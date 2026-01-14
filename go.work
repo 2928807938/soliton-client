@@ -1,24 +1,6 @@
 go 1.24.11
 
 use (
-	../universal-service-user/api/user-api
-	../universal-service-user/auth/domain
-	../universal-service-user/auth/infrastructure
-	../universal-service-user/hook
-	../universal-service-user/notification/domain
-	../universal-service-user/notification/infrastructure
-	../universal-service-user/oauth/domain
-	../universal-service-user/oauth/infrastructure
-	../universal-service-user/oauth/provider
-	../universal-service-user/rules
-
-	// Universal User Service SDK 及其依赖模块
-	../universal-service-user/sdk
-	../universal-service-user/share
-	../universal-service-user/user/domain
-	../universal-service-user/user/infrastructure
-	../universal-service-user/verification/domain
-	../universal-service-user/verification/infrastructure
 	./api
 	./bom
 	./cmd/api

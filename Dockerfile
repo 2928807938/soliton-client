@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM golang AS builder
 
 WORKDIR /app
 
@@ -7,11 +7,7 @@ WORKDIR /app
 COPY go.work ./
 COPY bom/go.mod ./bom/
 COPY share/go.mod ./share/
-COPY user/go.mod ./user/
-COPY user/domain/go.mod ./user/domain/
-COPY user/infrastructure/go.mod ./user/infrastructure/
 COPY api/go.mod ./api/
-COPY api/user-api/go.mod ./api/user-api/
 COPY cmd/api/go.mod ./cmd/api/
 
 # Download dependencies
